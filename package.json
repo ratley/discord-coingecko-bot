@@ -4,7 +4,9 @@
   "main": "index.js",
   "author": "bradley inniss",
   "license": "MIT",
+  "type": "module",
   "dependencies": {
+    "coingecko-api": "^1.0.10",
     "discord.js": "^12.5.3"
   }
 }
