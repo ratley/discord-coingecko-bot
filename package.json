@@ -1,0 +1,10 @@
+{
+  "name": "crypto-discord-bot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "bradley inniss",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^12.5.3"
+  }
+}
