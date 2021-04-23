@@ -1,5 +1,5 @@
 import CoinGecko from "coingecko-api";
-import { createEmbed } from "./util.js";
+import { createEmbed, formatPrice } from "./util.js";
 
 const cg = new CoinGecko();
 
@@ -48,7 +48,7 @@ export class PriceChecker {
       rank: market_cap_rank,
       thumbnail: image.thumb,
       image: image.small,
-      price: `$${current_price.usd}`,
+      price: `$${formatPrice(current_price.usd)}`,
       pricePercent1h: price_change_percentage_1h_in_currency.usd,
       pricePercent24h: price_change_percentage_24h,
       pricePercent7d: price_change_percentage_7d,

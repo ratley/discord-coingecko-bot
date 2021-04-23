@@ -3,6 +3,12 @@ import CoinGecko from "coingecko-api";
 
 import { PriceChecker } from "./handlers.js";
 
+export const formatPrice = (price) => {
+  const str = price.toString();
+  const fixed = price.toFixed(20).replace(/\.?0+$/, "");
+  return str.includes("e") ? fixed : price;
+};
+
 export const createEmbed = ({
   name,
   description,
