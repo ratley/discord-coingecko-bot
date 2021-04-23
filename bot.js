@@ -6,7 +6,14 @@ const client = new Client();
 let mh = new MessageHandler();
 
 client.on("ready", () => {
-  client.user.setStatus("$price");
+  client.user.setStatus("dnd");
+  client.user.setPresence({
+    status: "$price",
+    activity: {
+      name: "$price",
+      type: "WATCHING",
+    },
+  });
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
