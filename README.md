@@ -7,6 +7,4 @@ If you want to use this:
 
 `$ node bot.js`
 
-Add this bot to your server
-
-https://discord.com/oauth2/authorize?client_id=832861791964495972&scope=bot&permissions=18496
+[Add this bot to your server](https://discord.com/oauth2/authorize?client_id=832861791964495972&scope=bot&permissions=18496)
