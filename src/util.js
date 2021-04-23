@@ -17,7 +17,7 @@ export const createEmbed = ({
   thumbnail,
   image,
   author,
-  rank,
+  marketCap,
   price,
   pricePercent1h,
   pricePercent24h,
@@ -50,7 +50,8 @@ export const createEmbed = ({
         value: `${Number(pricePercent7d).toFixed(2)}%`,
         inline: true,
       },
-      { name: "**Market Cap**", value: `Rank ${rank}` }
+      { name: "**Market Cap**", value: `$${marketCap}` },
+      { name: "\u200B", value: `[Coingecko](${url})` }
     )
     .setTimestamp()
     .setFooter(

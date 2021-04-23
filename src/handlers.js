@@ -1,4 +1,5 @@
 import CoinGecko from "coingecko-api";
+import { MessageEmbed } from "discord.js";
 import { createEmbed, formatPrice } from "./util.js";
 
 const cg = new CoinGecko();
@@ -21,10 +22,13 @@ export class PriceChecker {
   }
 
   async isSymbol(symbol) {
-    const list = await cg.coins.list();
-    const coin = list.data.find((coin) => coin.symbol == symbol);
+    let fetch = { success: false };
 
-    const fetch = await cg.coins.fetch(coin.id);
+    const coin = this.list.data.find((coin) => coin.symbol == symbol);
+
+    if (coin) fetch = await cg.coins.fetch(coin.id);
+
+    console.log(coin);
 
     if (fetch.success === true) {
       if (!(symbol in this.cache)) {
@@ -40,9 +44,9 @@ export class PriceChecker {
     const data = await this.checkCache(symbol);
 
     const {
+      id,
       name,
       description,
-      market_cap_rank,
       image,
       market_data: {
         current_price,
@@ -51,13 +55,14 @@ export class PriceChecker {
         price_change_percentage_7d,
         price_change_percentage_14d,
         price_change_percentage_30d,
+        market_cap: { usd: marketCap },
       },
     } = data;
 
     const embedInfo = {
       name: name,
       description: description.en.split("\r\n")[0],
-      rank: market_cap_rank,
+      marketCap: marketCap.toLocaleString(undefined),
       thumbnail: image.thumb,
       image: image.small,
       price: `$${formatPrice(current_price.usd)}`,
@@ -66,6 +71,7 @@ export class PriceChecker {
       pricePercent7d: price_change_percentage_7d,
       pricePercent14d: price_change_percentage_14d,
       pricePercent30d: price_change_percentage_30d,
+      url: `https://www.coingecko.com/coins/${id}`,
     };
     const embed = createEmbed(embedInfo);
 
@@ -80,7 +86,7 @@ export class PriceChecker {
         .toString()
         .toUpperCase()}** on Coingecko`,
     });
-    if (isSymbol) {
+    if (isSymbol === true) {
       return this.handleSymbol(coin);
     }
 
@@ -135,15 +141,21 @@ export class PriceChecker {
 
 export class MessageHandler {
   constructor(channel) {
-    this.channel = channel;
+    this.messageChannel;
     this.pc = new PriceChecker();
+
+    this.pc.init();
+  }
+
+  set channel(c) {
+    this.messageChannel = c;
   }
 
   async handleCommand(command, args) {
     switch (command) {
       case "$price":
         const price = await this.pc.getPrice(args[0]);
-        this.channel.send(price);
+        this.messageChannel.send(price);
         return price;
       default:
         return null;

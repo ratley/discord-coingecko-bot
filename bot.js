@@ -3,7 +3,7 @@ import { token } from "./src/config.js";
 import { MessageHandler } from "./src/handlers.js";
 
 const client = new Client();
-let mh;
+let mh = new MessageHandler();
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -11,7 +11,7 @@ client.on("ready", () => {
 
 client.on("message", (msg) => {
   const channel = msg.channel;
-  if (!mh) mh = new MessageHandler(channel);
+  if (!mh.channel) mh.channel = channel;
 
   const msgArr = msg.content.split(" ");
   const isValidCommand = msg.content[0] == "$";
