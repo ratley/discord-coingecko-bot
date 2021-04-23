@@ -4,63 +4,117 @@ import { createEmbed } from "./util.js";
 const cg = new CoinGecko();
 
 export class PriceChecker {
-  constructor() {}
-
-  async getCoins() {
-    const list = await cg.coins.list();
-
-    const coins = {};
-
-    list.data.map(({ symbol, id, name }) => {
-      coins[symbol] = {
-        id: id,
-        name: name,
-      };
-    });
-
-    return coins;
+  constructor() {
+    this.cache = {};
   }
 
-  async isSymbol() {
-    const fetch = await cd.coins.fetch(arg);
-    return fetch.success === false;
-  }
-
-  async fetchCoin(symbol) {
+  async isSymbol(symbol) {
     const list = await cg.coins.list();
     const coin = list.data.find((coin) => coin.symbol == symbol);
 
-    const coinData = await cg.coins.fetch(coin.id, {
-      localization: false,
-      sparkline: true,
-    });
-    return coinData;
-  }
+    const fetch = await cg.coins.fetch(coin.id);
 
-  async getPrice(coin) {
-    if (this.isSymbol) {
-      return this.handleSymbol(coin);
-    } else {
+    if (fetch.success === true) {
+      if (!(symbol in this.cache)) {
+        this.cache[symbol] = {};
+        this.cache[symbol].fetched = false;
+      }
     }
+
+    return fetch.success;
   }
 
   async handleSymbol(symbol) {
-    const { data } = await this.fetchCoin(symbol);
+    const data = await this.checkCache(symbol);
 
-    // console.log(data.description.en.split("\r\n")[0]);
-    console.log(data.market_data.current_price.usd);
+    const {
+      name,
+      description,
+      market_cap_rank,
+      image,
+      market_data: {
+        current_price,
+        price_change_percentage_1h_in_currency,
+        price_change_percentage_24h,
+        price_change_percentage_7d,
+        price_change_percentage_14d,
+        price_change_percentage_30d,
+      },
+    } = data;
 
     const embedInfo = {
-      name: data.name,
-      description: data.description.en.split("\r\n")[0],
-      rank: data.market_cap_rank,
-      thumbnail: data.image.thumb,
-      image: data.image.small,
-      price: `$${data.market_data.current_price.usd}`,
+      name: name,
+      description: description.en.split("\r\n")[0],
+      rank: market_cap_rank,
+      thumbnail: image.thumb,
+      image: image.small,
+      price: `$${current_price.usd}`,
+      pricePercent1h: price_change_percentage_1h_in_currency.usd,
+      pricePercent24h: price_change_percentage_24h,
+      pricePercent7d: price_change_percentage_7d,
+      pricePercent14d: price_change_percentage_14d,
+      pricePercent30d: price_change_percentage_30d,
     };
     const embed = createEmbed(embedInfo);
 
     return embed;
+  }
+
+  async getPrice(coin) {
+    const isSymbol = await this.isSymbol(coin);
+    let embed = createEmbed({
+      title: `Unable to find $${coin} on Coingecko`,
+    });
+    if (isSymbol) {
+      return this.handleSymbol(coin);
+    }
+
+    return embed;
+  }
+
+  async checkCache(symbol) {
+    const time = new Date().getTime();
+    let data;
+
+    let cache = this.cache[symbol];
+
+    if (cache.fetched) {
+      if (time - cache.time < 10000) {
+        data = cache.data;
+      } else {
+        const coin = await this.fetchCoin(symbol);
+        data = coin.data;
+
+        this.cache[symbol].data = coin.data;
+        this.cache[symbol].time = time;
+        this.cache[symbol].fetched = true;
+      }
+    } else {
+      const coin = await this.fetchCoin(symbol);
+      data = coin.data;
+
+      this.cache[symbol].fetched = true;
+      this.cache[symbol].data = coin.data;
+      this.cache[symbol].time = time;
+    }
+
+    return data;
+  }
+
+  async fetchCoin(symbol) {
+    let list;
+    let coin;
+    let coinData = this.cache[symbol];
+
+    if (this.cache[symbol].fetched === false) {
+      list = await cg.coins.list();
+      coin = list.data.find((coin) => coin.symbol == symbol);
+      coinData = await cg.coins.fetch(coin.id, {
+        localization: false,
+      });
+    }
+
+    return coinData;
   }
 }
 
@@ -74,7 +128,6 @@ export class MessageHandler {
     switch (command) {
       case "$price":
         const price = await this.pc.getPrice(args[0]);
-        console.log("price", price);
         this.channel.send(price);
         return price;
       default:
