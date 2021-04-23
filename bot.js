@@ -5,6 +5,8 @@ import { MessageHandler } from "./src/handlers.js";
 const client = new Client();
 let mh = new MessageHandler();
 
+client.user.setActivity("$price");
+
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
