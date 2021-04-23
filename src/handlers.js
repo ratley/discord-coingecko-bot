@@ -6,6 +6,18 @@ const cg = new CoinGecko();
 export class PriceChecker {
   constructor() {
     this.cache = {};
+    this.list = [];
+  }
+
+  async init() {
+    await this.getCoinList();
+    console.log("Initialized 😈");
+  }
+
+  async getCoinList() {
+    this.list = await cg.coins.list();
+
+    return this.list;
   }
 
   async isSymbol(symbol) {
@@ -62,8 +74,11 @@ export class PriceChecker {
 
   async getPrice(coin) {
     const isSymbol = await this.isSymbol(coin);
-    let embed = createEmbed({
-      title: `Unable to find $${coin} on Coingecko`,
+    let embed = new MessageEmbed().addFields({
+      name: `Hmm...`,
+      value: `Unable to find **$${coin
+        .toString()
+        .toUpperCase()}** on Coingecko`,
     });
     if (isSymbol) {
       return this.handleSymbol(coin);
