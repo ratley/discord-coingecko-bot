@@ -1,6 +1,6 @@
-import CoinGecko from "coingecko-api";
-import { MessageEmbed } from "discord.js";
-import { createEmbed, formatPrice } from "./util.js";
+import CoinGecko from 'coingecko-api';
+import { MessageEmbed } from 'discord.js';
+import { createEmbed, formatPrice } from './util.js';
 
 const cg = new CoinGecko();
 
@@ -12,7 +12,11 @@ export class PriceChecker {
 
   async init() {
     await this.getCoinList();
-    console.log("Initialized 😈");
+    console.log('Initialized 😈');
+
+    setInterval(() => {
+      this.cache = {};
+    }, 1 * 30 * 1000);
   }
 
   async getCoinList() {
@@ -61,7 +65,7 @@ export class PriceChecker {
 
     const embedInfo = {
       name: name,
-      description: description.en.split("\r\n")[0],
+      description: description.en.split('\r\n')[0],
       marketCap: marketCap.toLocaleString(undefined),
       thumbnail: image.thumb,
       image: image.small,
@@ -153,7 +157,7 @@ export class MessageHandler {
 
   async handleCommand(command, args) {
     switch (command) {
-      case "$price":
+      case '$price':
         const price = await this.pc.getPrice(args[0]);
         this.messageChannel.send(price);
         return price;
